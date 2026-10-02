@@ -16,7 +16,7 @@ export const useStockMovement = () => {
   const service = new StockMovementService(inventoryApi);
   const store = useStockMovementStore(service)();
   const { stockMovements, loading } = storeToRefs(store);
-  const { applyStockDelta } = useProduct();
+  const { loadProducts } = useProduct();
 
   const loadStockMovements = async (filter?: StockMovementListFilter) => {
     try {
@@ -30,8 +30,9 @@ export const useStockMovement = () => {
   const createStockMovement = async (params: StockMovementParams) => {
     try {
       const movement = await store.createStockMovement(params);
-      const delta = params.type === 'out' ? -params.quantity : params.quantity;
-      applyStockDelta(params.product_id, delta);
+      // The backend applies the delta in the same transaction as the ledger
+      // insert, so re-read instead of guessing the new balance here.
+      await loadProducts();
       $q.notify({ type: 'positive', message: 'Movimiento registrado correctamente' });
       return movement;
     } catch {

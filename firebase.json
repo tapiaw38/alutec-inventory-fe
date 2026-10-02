@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "target": "inventory",
+    "public": "dist/spa",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

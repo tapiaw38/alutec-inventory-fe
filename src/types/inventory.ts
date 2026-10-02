@@ -1,4 +1,4 @@
-export type CategoryType = 'raw_material' | 'finished_good';
+export type CategoryType = 'raw_material' | 'finished_good' | 'tool';
 
 export interface Category {
   id: string;

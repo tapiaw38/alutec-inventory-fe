@@ -34,7 +34,7 @@ export const useProductStore = (service: IProductService) =>
       }
     };
 
-    const updateProduct = async (id: string, params: Omit<ProductParams, 'stock_qty'>) => {
+    const updateProduct = async (id: string, params: Omit<ProductParams, 'stock_qty' | 'warehouse_id'>) => {
       loading.value = true;
       try {
         const response = await service.update(id, params);
@@ -56,11 +56,6 @@ export const useProductStore = (service: IProductService) =>
       }
     };
 
-    const applyStockDelta = (productId: string, delta: number) => {
-      const product = products.value.find((p) => p.id === productId);
-      if (product) product.stock_qty += delta;
-    };
-
     return {
       products,
       loading,
@@ -68,6 +63,5 @@ export const useProductStore = (service: IProductService) =>
       createProduct,
       updateProduct,
       deleteProduct,
-      applyStockDelta,
     };
   });

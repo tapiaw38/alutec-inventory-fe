@@ -35,7 +35,7 @@ export const useProduct = () => {
     }
   };
 
-  const updateProduct = async (id: string, params: Omit<ProductParams, 'stock_qty'>) => {
+  const updateProduct = async (id: string, params: Omit<ProductParams, 'stock_qty' | 'warehouse_id'>) => {
     try {
       const product = await store.updateProduct(id, params);
       $q.notify({ type: 'positive', message: 'Producto actualizado correctamente' });
@@ -92,7 +92,6 @@ export const useProduct = () => {
     deleteProduct,
     downloadImportTemplate,
     importProducts,
-    applyStockDelta: store.applyStockDelta,
   };
 };
 

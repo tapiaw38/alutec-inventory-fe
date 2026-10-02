@@ -11,6 +11,8 @@ export interface ProductParams {
   sale_price: number;
   min_stock: number;
   stock_qty?: number;
+  /** Warehouse that receives the opening stock; required when stock_qty > 0. */
+  warehouse_id?: string;
   image_url: string;
 }
 
@@ -34,7 +36,7 @@ export interface ImportResult {
 export interface IProductService {
   list(filter?: ProductListFilter): Promise<{ data: Product[] }>;
   create(params: ProductParams): Promise<{ data: Product }>;
-  update(id: string, params: Omit<ProductParams, 'stock_qty'>): Promise<{ data: Product }>;
+  update(id: string, params: Omit<ProductParams, 'stock_qty' | 'warehouse_id'>): Promise<{ data: Product }>;
   delete(id: string): Promise<void>;
   downloadImportTemplate(): Promise<Blob>;
   importFile(file: File): Promise<ImportResult>;
@@ -59,7 +61,7 @@ export class ProductService implements IProductService {
     return data;
   }
 
-  async update(id: string, params: Omit<ProductParams, 'stock_qty'>): Promise<{ data: Product }> {
+  async update(id: string, params: Omit<ProductParams, 'stock_qty' | 'warehouse_id'>): Promise<{ data: Product }> {
     const { data } = await this.api.put(`/products/${id}`, params);
     return data;
   }

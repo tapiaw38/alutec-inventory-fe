@@ -31,11 +31,13 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <div class="page-container-wrap">
+        <router-view />
+      </div>
     </q-page-container>
 
     <q-footer bordered class="bg-white">
-      <div class="row items-center justify-around bottom-nav">
+      <div class="row items-center justify-around bottom-nav bottom-nav-wrap">
         <q-btn
           flat
           stack
@@ -260,8 +262,18 @@ async function quickMove(type: StockMovementType) {
   font-weight: 600;
 }
 
+.page-container-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 .bottom-nav {
   padding: 4px 0 6px;
+}
+
+.bottom-nav-wrap {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .bottom-nav__btn {

@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "alutec-odoo"
+  },
+  "targets": {
+    "alutec-odoo": {
+      "hosting": {
+        "inventory": [
+          "alutec-inventory"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

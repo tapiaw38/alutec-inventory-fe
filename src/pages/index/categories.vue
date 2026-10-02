@@ -9,7 +9,7 @@
     <q-table flat bordered :rows="categories" :columns="columns" row-key="id" :loading="loading">
       <template #body-cell-type="props">
         <q-td :props="props">
-          <q-badge :color="props.value === 'raw_material' ? 'secondary' : 'accent'">
+          <q-badge :color="typeColor(props.value)">
             {{ typeLabel(props.value) }}
           </q-badge>
         </q-td>
@@ -87,10 +87,21 @@ const columns: QTableColumn[] = [
 const typeOptions: { label: string; value: CategoryType }[] = [
   { label: 'Materia prima', value: 'raw_material' },
   { label: 'Producto terminado', value: 'finished_good' },
+  { label: 'Herramienta', value: 'tool' },
 ];
+
+const typeColors: Record<CategoryType, string> = {
+  raw_material: 'secondary',
+  finished_good: 'accent',
+  tool: 'teal',
+};
 
 function typeLabel(type: CategoryType) {
   return typeOptions.find((o) => o.value === type)?.label ?? type;
+}
+
+function typeColor(type: CategoryType) {
+  return typeColors[type] ?? 'grey';
 }
 
 const dialogOpen = ref(false);

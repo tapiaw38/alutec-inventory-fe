@@ -6,10 +6,10 @@
     </div>
 
     <div class="row q-col-gutter-md">
-      <div class="col-6">
+      <div class="col-6 col-sm-3">
         <StatCard icon="inventory_2" label="Productos" :value="products.length" color="primary" />
       </div>
-      <div class="col-6">
+      <div class="col-6 col-sm-3">
         <StatCard
           icon="warning"
           label="Stock bajo mínimo"
@@ -17,10 +17,10 @@
           :color="lowStockCount > 0 ? 'negative' : 'positive'"
         />
       </div>
-      <div class="col-6">
+      <div class="col-6 col-sm-3">
         <StatCard icon="local_shipping" label="Proveedores" :value="suppliers.length" color="secondary" />
       </div>
-      <div class="col-6">
+      <div class="col-6 col-sm-3">
         <StatCard icon="warehouse" label="Depósitos" :value="warehouses.length" color="accent" />
       </div>
     </div>

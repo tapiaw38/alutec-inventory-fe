@@ -11,7 +11,7 @@
         icon="print"
         :label="`Imprimir (${selected.length})`"
         no-caps
-        @click="printLabels"
+        @click="openPrintDialog"
       />
       <q-btn-dropdown dense outline color="primary" icon="description" label="Excel" no-caps>
         <q-list>
@@ -301,6 +301,20 @@
             dense
             outlined
           />
+          <q-select
+            v-if="!editingId && (form.stock_qty ?? 0) > 0"
+            v-model="form.warehouse_id"
+            :options="warehouseOptions"
+            emit-value
+            map-options
+            class="col-12"
+            label="Depósito del stock inicial"
+            :hint="warehouseOptions.length ? '' : 'Creá un depósito primero'"
+            :error="!form.warehouse_id"
+            error-message="Elegí dónde entra el stock inicial"
+            dense
+            outlined
+          />
           <div v-else class="col-12 col-sm-6">
             <div class="text-caption text-grey-7">Stock actual</div>
             <div class="text-weight-medium">{{ form.stock_qty }} {{ form.unit }}</div>
@@ -408,22 +422,57 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="printDialogOpen">
+      <q-card style="width: 400px; max-width: 95vw">
+        <q-card-section>
+          <div class="text-h6">Imprimir rótulos</div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-list separator>
+          <q-item v-for="p in selected" :key="p.id">
+            <q-item-section>
+              <q-item-label>{{ p.name }}</q-item-label>
+              <q-item-label caption>SKU: {{ p.sku }}</q-item-label>
+            </q-item-section>
+            <q-item-section side style="width: 90px">
+              <q-input
+                v-model.number="printQuantities[p.id]"
+                type="number"
+                dense
+                outlined
+                min="1"
+                class="no-spin-input"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn color="primary" icon="print" label="Imprimir" no-caps @click="printLabels" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- Print-only label sheet: hidden on screen, shown via @media print -->
     <div id="label-print-area">
-      <div v-for="p in selected" :key="p.id" class="print-label">
-        <div class="print-label__name">{{ p.name }}</div>
-        <BarcodeDisplay :value="p.sku" :height="40" :bar-width="1.2" />
+      <div v-for="item in printItems" :key="item.key" class="print-label">
+        <div class="print-label__name">{{ item.product.name }}</div>
+        <BarcodeDisplay :value="item.product.sku" :height="40" :bar-width="1.2" />
       </div>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
 import type { QTableColumn } from 'quasar';
 import { useProduct } from '@/composables/useProduct';
 import { useCategory } from '@/composables/useCategory';
 import { useSupplier } from '@/composables/useSupplier';
+import { useWarehouse } from '@/composables/useWarehouse';
 import type { Product } from '@/types/inventory';
 import type { ProductParams, ImportRowError } from '@/services/products/productService';
 import BarcodeDisplay from '@/components/BarcodeDisplay.vue';
@@ -442,6 +491,7 @@ const {
   useProduct();
 const { categories, loadCategories } = useCategory();
 const { suppliers, loadSuppliers } = useSupplier();
+const { warehouses, loadWarehouses } = useWarehouse();
 
 const columns: QTableColumn[] = [
   { name: 'image', label: '', field: 'image_url', align: 'left' },
@@ -456,11 +506,15 @@ const columns: QTableColumn[] = [
 
 const categoryOptions = ref<{ label: string; value: string }[]>([]);
 const supplierOptions = ref<{ label: string; value: string }[]>([]);
+const warehouseOptions = ref<{ label: string; value: string }[]>([]);
 watch(categories, (list) => {
   categoryOptions.value = list.map((c) => ({ label: c.name, value: c.id }));
 });
 watch(suppliers, (list) => {
   supplierOptions.value = list.map((s) => ({ label: s.name, value: s.id }));
+});
+watch(warehouses, (list) => {
+  warehouseOptions.value = list.map((w) => ({ label: w.name, value: w.id }));
 });
 
 const search = ref('');
@@ -487,6 +541,7 @@ watch([categoryFilter, supplierFilter, lowStockOnly], () => void refreshList());
 onMounted(() => {
   void loadCategories();
   void loadSuppliers();
+  void loadWarehouses();
   void refreshList();
 });
 
@@ -515,6 +570,7 @@ const form = reactive<ProductParams>({
   sale_price: 0,
   min_stock: 0,
   stock_qty: 0,
+  warehouse_id: '',
   image_url: '',
 });
 
@@ -529,6 +585,7 @@ function resetForm() {
     sale_price: 0,
     min_stock: 0,
     stock_qty: 0,
+    warehouse_id: warehouseOptions.value[0]?.value ?? '',
     image_url: '',
   });
 }
@@ -585,7 +642,9 @@ async function save() {
         image_url,
       });
     } else {
-      await createProduct({ ...form });
+      const stockQty = form.stock_qty ?? 0;
+      if (stockQty > 0 && !form.warehouse_id) return; // the select already flags this
+      await createProduct({ ...form, warehouse_id: stockQty > 0 ? (form.warehouse_id ?? '') : '' });
     }
     dialogOpen.value = false;
   } catch {
@@ -643,6 +702,22 @@ async function changePhoto() {
 }
 
 const selected = ref<Product[]>([]);
+const printDialogOpen = ref(false);
+const printQuantities = reactive<Record<string, number>>({});
+
+function openPrintDialog() {
+  for (const p of selected.value) {
+    if (!printQuantities[p.id]) printQuantities[p.id] = 1;
+  }
+  printDialogOpen.value = true;
+}
+
+const printItems = computed(() =>
+  selected.value.flatMap((p) => {
+    const qty = Math.max(1, printQuantities[p.id] ?? 1);
+    return Array.from({ length: qty }, (_, i) => ({ key: `${p.id}-${i}`, product: p }));
+  }),
+);
 
 async function printLabels() {
   await nextTick();
