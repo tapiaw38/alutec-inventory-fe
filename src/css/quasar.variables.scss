@@ -12,14 +12,16 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary: #1976d2;
-$secondary: #26a69a;
-$accent: #9c27b0;
+// Alutec Carpentry palette — picked from Quasar's documented Material color palette
+// https://quasar.dev/style/color-palette
+$primary: #e64a19; // deep-orange-7 — terracotta
+$secondary: #00796b; // teal-7 — workshop
+$accent: #ff8f00; // amber-8 — sawdust highlight
 
 $dark: #1d1d1d;
 $dark-page: #121212;
 
-$positive: #21ba45;
-$negative: #c10015;
-$info: #31ccec;
-$warning: #f2c037;
+$positive: #388e3c; // green-7
+$negative: #d32f2f; // red-7
+$info: #0288d1; // light-blue-7
+$warning: #ffa000; // amber-7

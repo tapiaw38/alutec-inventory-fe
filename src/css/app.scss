@@ -1,1 +1,22 @@
 // app global css
+
+// Type system: Inter for body/UI (dense, legible for tables and forms),
+// Playfair Display for headings (elegant, high-contrast serif).
+body {
+  font-family:
+    'InterVariable',
+    -apple-system,
+    sans-serif;
+}
+
+.text-h1,
+.text-h2,
+.text-h3,
+.text-h4,
+.text-h5,
+.text-h6,
+.q-toolbar__title,
+.dashboard-eyebrow {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+}

@@ -14,12 +14,15 @@ import type {
   ParamValueZeroOrMore,
   ParamValueZeroOrOne,
 } from 'vue-router'
-import type { _ExtractParamParserType } from 'vue-router/experimental';
+import type {
+  _ExtractParamParserType,
+} from 'vue-router/experimental'
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers: never;
-    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap;
+    _ParamParsers: {}
+    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -33,29 +36,62 @@ declare module 'vue-router/auto-routes' {
       '/',
       Record<never, never>,
       Record<never, never>,
-      '//(index)' | '//second'
-    >;
+      | '//(index)'
+      | '//categories'
+      | '//movements'
+      | '//products'
+      | '//suppliers'
+      | '//warehouses'
+    >,
     '//(index)': RouteRecordInfo<
       '//(index)',
       '/',
       Record<never, never>,
       Record<never, never>,
-      never
-    >;
-    '//second': RouteRecordInfo<
-      '//second',
-      '/second',
+      | never
+    >,
+    '//categories': RouteRecordInfo<
+      '//categories',
+      '/categories',
       Record<never, never>,
       Record<never, never>,
-      never
-    >;
+      | never
+    >,
+    '//movements': RouteRecordInfo<
+      '//movements',
+      '/movements',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//products': RouteRecordInfo<
+      '//products',
+      '/products',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//suppliers': RouteRecordInfo<
+      '//suppliers',
+      '/suppliers',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '//warehouses': RouteRecordInfo<
+      '//warehouses',
+      '/warehouses',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/[...path]': RouteRecordInfo<
       '/[...path]',
       '/:path(.*)',
       { path: ParamValue<true> },
       { path: ParamValue<false> },
-      never
-    >;
+      | never
+    >,
   }
 
   /**
@@ -70,21 +106,75 @@ declare module 'vue-router/auto-routes' {
    */
   export interface _RouteFileInfoMap {
     'src/pages/index.vue': {
-      routes: '/' | '//(index)' | '//second';
-      views: 'default';
-    };
+      routes:
+        | '/'
+        | '//(index)'
+        | '//categories'
+        | '//movements'
+        | '//products'
+        | '//suppliers'
+        | '//warehouses'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
     'src/pages/index/(index).vue': {
-      routes: '//(index)';
-      views: never;
-    };
-    'src/pages/index/second.vue': {
-      routes: '//second';
-      views: never;
-    };
+      routes:
+        | '//(index)'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/index/categories.vue': {
+      routes:
+        | '//categories'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/index/movements.vue': {
+      routes:
+        | '//movements'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/index/products.vue': {
+      routes:
+        | '//products'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/index/suppliers.vue': {
+      routes:
+        | '//suppliers'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/index/warehouses.vue': {
+      routes:
+        | '//warehouses'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/[...path].vue': {
-      routes: '/[...path]';
-      views: never;
-    };
+      routes:
+        | '/[...path]'
+      views:
+        | never
+      pathParamNames:
+        | 'path'
+    }
   }
 
   /**
@@ -94,7 +184,9 @@ declare module 'vue-router/auto-routes' {
    * @internal
    */
   export type _RouteNamesForFilePath<FilePath extends string> =
-    _RouteFileInfoMap extends Record<FilePath, infer Info> ? Info['routes'] : keyof RouteNamedMap;
+    _RouteFileInfoMap extends Record<FilePath, infer Info>
+      ? Info['routes']
+      : keyof RouteNamedMap
 }
 
-export {};
+export {}
