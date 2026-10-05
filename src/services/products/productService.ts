@@ -28,6 +28,11 @@ export interface ImportRowError {
   message: string;
 }
 
+export interface DeleteResult {
+  /** True when the product had stock history and was archived instead. */
+  archived: boolean;
+}
+
 export interface ImportResult {
   imported: number;
   errors: ImportRowError[] | null;
@@ -37,7 +42,7 @@ export interface IProductService {
   list(filter?: ProductListFilter): Promise<{ data: Product[] }>;
   create(params: ProductParams): Promise<{ data: Product }>;
   update(id: string, params: Omit<ProductParams, 'stock_qty' | 'warehouse_id'>): Promise<{ data: Product }>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<DeleteResult>;
   downloadImportTemplate(): Promise<Blob>;
   importFile(file: File): Promise<ImportResult>;
 }
@@ -66,8 +71,9 @@ export class ProductService implements IProductService {
     return data;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.api.delete(`/products/${id}`);
+  async delete(id: string): Promise<DeleteResult> {
+    const { data } = await this.api.delete(`/products/${id}`);
+    return data.data ?? { archived: false };
   }
 
   async downloadImportTemplate(): Promise<Blob> {

@@ -49,8 +49,14 @@ export const useProduct = () => {
 
   const deleteProduct = async (id: string) => {
     try {
-      await store.deleteProduct(id);
-      $q.notify({ type: 'positive', message: 'Producto eliminado correctamente' });
+      const result = await store.deleteProduct(id);
+      $q.notify({
+        type: 'positive',
+        message: result?.archived
+          ? 'Producto archivado: tenía movimientos, su historial se conserva'
+          : 'Producto eliminado correctamente',
+      });
+      return result;
     } catch {
       $q.notify({ type: 'negative', message: 'No se pudo eliminar el producto' });
       throw new Error('delete-product-failed');

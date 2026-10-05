@@ -49,8 +49,9 @@ export const useProductStore = (service: IProductService) =>
     const deleteProduct = async (id: string) => {
       loading.value = true;
       try {
-        await service.delete(id);
+        const result = await service.delete(id);
         products.value = products.value.filter((p) => p.id !== id);
+        return result;
       } finally {
         loading.value = false;
       }

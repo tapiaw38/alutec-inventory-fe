@@ -352,7 +352,11 @@
           <div class="text-h6">Eliminar producto</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          ¿Seguro que querés eliminar <strong>{{ productToDelete?.name }}</strong>? Esta acción no se puede deshacer.
+          ¿Seguro que querés eliminar <strong>{{ productToDelete?.name }}</strong>?
+          <div class="text-caption text-grey-7 q-mt-sm">
+            Si ya tuvo movimientos de stock se archiva en lugar de borrarse: deja de aparecer en
+            las listas, pero su historial se conserva.
+          </div>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" v-close-popup />
