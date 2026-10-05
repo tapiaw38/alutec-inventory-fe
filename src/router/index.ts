@@ -1,4 +1,5 @@
 import { defineRouter } from '#q-app';
+import { readSession } from '@/utils/session';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes';
 import {
   createMemoryHistory,
@@ -31,6 +32,21 @@ export default defineRouter((/* { store, ssrContext } */) => {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE),
+  });
+
+  // The guard only hides the UI; the API rejects unauthenticated calls on
+  // its own, which is what actually protects the data.
+  Router.beforeEach((to) => {
+    const isLogin = to.path === '/login';
+    const hasSession = readSession() !== null;
+
+    if (!hasSession && !isLogin) {
+      return { path: '/login', query: to.fullPath === '/' ? {} : { redirect: to.fullPath } };
+    }
+    if (hasSession && isLogin) {
+      return { path: '/' };
+    }
+    return true;
   });
 
   // enable HMR for it

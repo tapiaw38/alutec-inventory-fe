@@ -4,6 +4,9 @@
       <q-toolbar>
         <img src="~@/assets/alutec-logo.png" alt="Alutec" class="app-logo q-mx-sm" />
         <q-toolbar-title>Alutec</q-toolbar-title>
+        <q-btn flat dense round icon="logout" aria-label="Cerrar sesión" @click="confirmLogout = true">
+          <q-tooltip>Cerrar sesión</q-tooltip>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
@@ -29,6 +32,16 @@
         </q-item>
       </q-list>
     </q-drawer>
+
+    <q-dialog v-model="confirmLogout">
+      <q-card style="width: 320px; max-width: 92vw">
+        <q-card-section class="text-subtitle1">¿Cerrar sesión?</q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn flat color="primary" label="Salir" no-caps @click="doLogout" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-page-container>
       <div class="page-container-wrap">
@@ -151,7 +164,9 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { useAuth } from '@/composables/useAuth';
 import { useProduct } from '@/composables/useProduct';
 import { useWarehouse } from '@/composables/useWarehouse';
 import { useStockMovement } from '@/composables/useStockMovement';
@@ -160,6 +175,8 @@ import type { Product, StockMovementType } from '@/types/inventory';
 import { scanBarcode, ScannerPermissionDeniedError, ScannerUnavailableError } from '@/composables/useBarcodeScanner';
 
 const $q = useQuasar();
+const router = useRouter();
+const { logout } = useAuth();
 const { products, loadProducts } = useProduct();
 const { warehouses, loadWarehouses } = useWarehouse();
 const { createStockMovement } = useStockMovement();
@@ -176,6 +193,13 @@ const moreLinks = [
 ];
 
 const moreDrawerOpen = ref(false);
+
+const confirmLogout = ref(false);
+
+async function doLogout() {
+  logout();
+  await router.replace('/login');
+}
 
 const quickActionOpen = ref(false);
 const scannedProduct = ref<Product | null>(null);
