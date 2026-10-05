@@ -3,6 +3,7 @@ import { useQuasar } from 'quasar';
 import { inventoryApi } from '@/api/request/server';
 import { SupplierService, type SupplierParams } from '@/services/suppliers/supplierService';
 import { useSupplierStore } from '@/stores/supplierStore';
+import { apiMessage } from '@/utils/apiError';
 
 export const useSupplier = () => {
   const $q = useQuasar();
@@ -43,11 +44,17 @@ export const useSupplier = () => {
 
   const deleteSupplier = async (id: string) => {
     try {
-      await store.deleteSupplier(id);
-      $q.notify({ type: 'positive', message: 'Proveedor eliminado correctamente' });
-    } catch {
-      $q.notify({ type: 'negative', message: 'No se pudo eliminar el proveedor' });
-      throw new Error('delete-supplier-failed');
+      const result = await store.deleteSupplier(id);
+      $q.notify({
+        type: 'positive',
+        message: result?.archived
+          ? 'Proveedor archivado: productos antiguos lo usan, su historial se conserva'
+          : 'Proveedor eliminado correctamente',
+      });
+      return result;
+    } catch (error) {
+      $q.notify({ type: 'negative', message: apiMessage(error, 'No se pudo eliminar el proveedor') });
+      throw new Error('delete-supplier-failed', { cause: error });
     }
   };
 

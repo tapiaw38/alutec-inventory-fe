@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import type { DeleteResult } from '@/services/products/productService';
 import type { Supplier } from '@/types/inventory';
 
 export interface SupplierParams {
@@ -11,7 +12,7 @@ export interface ISupplierService {
   list(): Promise<{ data: Supplier[] }>;
   create(params: SupplierParams): Promise<{ data: Supplier }>;
   update(id: string, params: SupplierParams): Promise<{ data: Supplier }>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<DeleteResult>;
 }
 
 export class SupplierService implements ISupplierService {
@@ -32,7 +33,8 @@ export class SupplierService implements ISupplierService {
     return data;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.api.delete(`/suppliers/${id}`);
+  async delete(id: string): Promise<DeleteResult> {
+    const { data } = await this.api.delete(`/suppliers/${id}`);
+    return data.data ?? { archived: false };
   }
 }

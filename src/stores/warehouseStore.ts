@@ -45,8 +45,9 @@ export const useWarehouseStore = (service: IWarehouseService) =>
     const deleteWarehouse = async (id: string) => {
       loading.value = true;
       try {
-        await service.delete(id);
+        const result = await service.delete(id);
         warehouses.value = warehouses.value.filter((w) => w.id !== id);
+        return result;
       } finally {
         loading.value = false;
       }

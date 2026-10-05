@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import type { DeleteResult } from '@/services/products/productService';
 import type { Warehouse } from '@/types/inventory';
 
 export interface WarehouseParams {
@@ -10,7 +11,7 @@ export interface IWarehouseService {
   list(): Promise<{ data: Warehouse[] }>;
   create(params: WarehouseParams): Promise<{ data: Warehouse }>;
   update(id: string, params: WarehouseParams): Promise<{ data: Warehouse }>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<DeleteResult>;
 }
 
 export class WarehouseService implements IWarehouseService {
@@ -31,7 +32,8 @@ export class WarehouseService implements IWarehouseService {
     return data;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.api.delete(`/warehouses/${id}`);
+  async delete(id: string): Promise<DeleteResult> {
+    const { data } = await this.api.delete(`/warehouses/${id}`);
+    return data.data ?? { archived: false };
   }
 }

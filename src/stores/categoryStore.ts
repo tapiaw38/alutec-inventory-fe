@@ -45,8 +45,9 @@ export const useCategoryStore = (service: ICategoryService) =>
     const deleteCategory = async (id: string) => {
       loading.value = true;
       try {
-        await service.delete(id);
+        const result = await service.delete(id);
         categories.value = categories.value.filter((c) => c.id !== id);
+        return result;
       } finally {
         loading.value = false;
       }

@@ -45,8 +45,9 @@ export const useSupplierStore = (service: ISupplierService) =>
     const deleteSupplier = async (id: string) => {
       loading.value = true;
       try {
-        await service.delete(id);
+        const result = await service.delete(id);
         suppliers.value = suppliers.value.filter((s) => s.id !== id);
+        return result;
       } finally {
         loading.value = false;
       }

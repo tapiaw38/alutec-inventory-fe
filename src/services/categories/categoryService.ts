@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import type { DeleteResult } from '@/services/products/productService';
 import type { Category, CategoryType } from '@/types/inventory';
 
 export interface CategoryParams {
@@ -10,7 +11,7 @@ export interface ICategoryService {
   list(): Promise<{ data: Category[] }>;
   create(params: CategoryParams): Promise<{ data: Category }>;
   update(id: string, params: CategoryParams): Promise<{ data: Category }>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<DeleteResult>;
 }
 
 export class CategoryService implements ICategoryService {
@@ -31,7 +32,8 @@ export class CategoryService implements ICategoryService {
     return data;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.api.delete(`/categories/${id}`);
+  async delete(id: string): Promise<DeleteResult> {
+    const { data } = await this.api.delete(`/categories/${id}`);
+    return data.data ?? { archived: false };
   }
 }

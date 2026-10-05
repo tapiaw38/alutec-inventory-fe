@@ -3,6 +3,7 @@ import { useQuasar } from 'quasar';
 import { inventoryApi } from '@/api/request/server';
 import { CategoryService, type CategoryParams } from '@/services/categories/categoryService';
 import { useCategoryStore } from '@/stores/categoryStore';
+import { apiMessage } from '@/utils/apiError';
 
 export const useCategory = () => {
   const $q = useQuasar();
@@ -43,11 +44,17 @@ export const useCategory = () => {
 
   const deleteCategory = async (id: string) => {
     try {
-      await store.deleteCategory(id);
-      $q.notify({ type: 'positive', message: 'Categoría eliminada correctamente' });
-    } catch {
-      $q.notify({ type: 'negative', message: 'No se pudo eliminar la categoría' });
-      throw new Error('delete-category-failed');
+      const result = await store.deleteCategory(id);
+      $q.notify({
+        type: 'positive',
+        message: result?.archived
+          ? 'Categoría archivada: productos antiguos la usan, su historial se conserva'
+          : 'Categoría eliminada correctamente',
+      });
+      return result;
+    } catch (error) {
+      $q.notify({ type: 'negative', message: apiMessage(error, 'No se pudo eliminar la categoría') });
+      throw new Error('delete-category-failed', { cause: error });
     }
   };
 

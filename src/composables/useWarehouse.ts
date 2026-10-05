@@ -3,6 +3,7 @@ import { useQuasar } from 'quasar';
 import { inventoryApi } from '@/api/request/server';
 import { WarehouseService, type WarehouseParams } from '@/services/warehouses/warehouseService';
 import { useWarehouseStore } from '@/stores/warehouseStore';
+import { apiMessage } from '@/utils/apiError';
 
 export const useWarehouse = () => {
   const $q = useQuasar();
@@ -43,11 +44,17 @@ export const useWarehouse = () => {
 
   const deleteWarehouse = async (id: string) => {
     try {
-      await store.deleteWarehouse(id);
-      $q.notify({ type: 'positive', message: 'Depósito eliminado correctamente' });
-    } catch {
-      $q.notify({ type: 'negative', message: 'No se pudo eliminar el depósito' });
-      throw new Error('delete-warehouse-failed');
+      const result = await store.deleteWarehouse(id);
+      $q.notify({
+        type: 'positive',
+        message: result?.archived
+          ? 'Depósito archivado: tiene movimientos, su historial se conserva'
+          : 'Depósito eliminado correctamente',
+      });
+      return result;
+    } catch (error) {
+      $q.notify({ type: 'negative', message: apiMessage(error, 'No se pudo eliminar el depósito') });
+      throw new Error('delete-warehouse-failed', { cause: error });
     }
   };
 

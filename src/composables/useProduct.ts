@@ -7,6 +7,7 @@ import {
   type ProductListFilter,
 } from '@/services/products/productService';
 import { useProductStore } from '@/stores/productStore';
+import { apiMessage } from '@/utils/apiError';
 
 export const useProduct = () => {
   const $q = useQuasar();
@@ -29,7 +30,7 @@ export const useProduct = () => {
       $q.notify({ type: 'positive', message: 'Producto creado correctamente' });
       return product;
     } catch (error) {
-      const message = axiosMessage(error, 'No se pudo crear el producto');
+      const message = apiMessage(error, 'No se pudo crear el producto');
       $q.notify({ type: 'negative', message });
       throw new Error('create-product-failed', { cause: error });
     }
@@ -41,7 +42,7 @@ export const useProduct = () => {
       $q.notify({ type: 'positive', message: 'Producto actualizado correctamente' });
       return product;
     } catch (error) {
-      const message = axiosMessage(error, 'No se pudo actualizar el producto');
+      const message = apiMessage(error, 'No se pudo actualizar el producto');
       $q.notify({ type: 'negative', message });
       throw new Error('update-product-failed', { cause: error });
     }
@@ -57,9 +58,9 @@ export const useProduct = () => {
           : 'Producto eliminado correctamente',
       });
       return result;
-    } catch {
-      $q.notify({ type: 'negative', message: 'No se pudo eliminar el producto' });
-      throw new Error('delete-product-failed');
+    } catch (error) {
+      $q.notify({ type: 'negative', message: apiMessage(error, 'No se pudo eliminar el producto') });
+      throw new Error('delete-product-failed', { cause: error });
     }
   };
 
@@ -101,15 +102,3 @@ export const useProduct = () => {
   };
 };
 
-function axiosMessage(error: unknown, fallback: string): string {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'response' in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message ===
-      'string'
-  ) {
-    return (error as { response: { data: { message: string } } }).response.data.message;
-  }
-  return fallback;
-}
