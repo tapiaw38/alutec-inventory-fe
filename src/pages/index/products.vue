@@ -460,7 +460,7 @@
     <div id="label-print-area">
       <div v-for="item in printItems" :key="item.key" class="print-label">
         <div class="print-label__name">{{ item.product.name }}</div>
-        <BarcodeDisplay :value="item.product.sku" :height="40" :bar-width="1.2" />
+        <BarcodeDisplay :value="item.product.sku" :height="40" :bar-width="1.2" :max-width="220" />
       </div>
     </div>
   </q-page>
@@ -468,6 +468,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
+import { useQuasar } from 'quasar';
 import type { QTableColumn } from 'quasar';
 import { useProduct } from '@/composables/useProduct';
 import { useCategory } from '@/composables/useCategory';
@@ -477,6 +478,7 @@ import type { Product } from '@/types/inventory';
 import type { ProductParams, ImportRowError } from '@/services/products/productService';
 import BarcodeDisplay from '@/components/BarcodeDisplay.vue';
 import { pickProductImage } from '@/composables/useProductImage';
+import { buildSku, randomSkuSuffix } from '@/utils/sku';
 
 const {
   products,
@@ -489,6 +491,7 @@ const {
   importProducts,
 } =
   useProduct();
+const $q = useQuasar();
 const { categories, loadCategories } = useCategory();
 const { suppliers, loadSuppliers } = useSupplier();
 const { warehouses, loadWarehouses } = useWarehouse();
@@ -504,18 +507,11 @@ const columns: QTableColumn[] = [
   { name: 'actions', label: '', field: 'id', align: 'right' },
 ];
 
-const categoryOptions = ref<{ label: string; value: string }[]>([]);
-const supplierOptions = ref<{ label: string; value: string }[]>([]);
-const warehouseOptions = ref<{ label: string; value: string }[]>([]);
-watch(categories, (list) => {
-  categoryOptions.value = list.map((c) => ({ label: c.name, value: c.id }));
-});
-watch(suppliers, (list) => {
-  supplierOptions.value = list.map((s) => ({ label: s.name, value: s.id }));
-});
-watch(warehouses, (list) => {
-  warehouseOptions.value = list.map((w) => ({ label: w.name, value: w.id }));
-});
+// Derived, not watched: the stores are shared, so these lists can already be
+// populated on mount and a non-immediate watch would never fire for them.
+const categoryOptions = computed(() => categories.value.map((c) => ({ label: c.name, value: c.id })));
+const supplierOptions = computed(() => suppliers.value.map((s) => ({ label: s.name, value: s.id })));
+const warehouseOptions = computed(() => warehouses.value.map((w) => ({ label: w.name, value: w.id })));
 
 const search = ref('');
 const categoryFilter = ref<string | null>(null);
@@ -602,21 +598,8 @@ async function pickFormImage() {
 }
 
 function generateSku() {
-  const categoryPart = (categoryOptions.value.find((c) => c.value === form.category_id)?.label ?? 'GEN')
-    .slice(0, 3)
-    .toUpperCase();
-  const stopWords = new Set(['DE', 'DEL', 'LA', 'EL', 'LOS', 'LAS', 'Y', 'CON']);
-  const namePart = form.name
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, '-')
-    .split('-')
-    .filter((word) => word && !stopWords.has(word))
-    .slice(0, 2)
-    .join('-');
-  const suffix = crypto.randomUUID().slice(0, 4).toUpperCase();
-  form.sku = [categoryPart, namePart, suffix].filter(Boolean).join('-');
+  const categoryName = categoryOptions.value.find((c) => c.value === form.category_id)?.label ?? '';
+  form.sku = buildSku(categoryName, form.name, randomSkuSuffix());
 }
 
 function openEdit(product: Product) {
@@ -643,7 +626,15 @@ async function save() {
       });
     } else {
       const stockQty = form.stock_qty ?? 0;
-      if (stockQty > 0 && !form.warehouse_id) return; // the select already flags this
+      if (stockQty > 0 && !form.warehouse_id) {
+        $q.notify({
+          type: 'warning',
+          message: warehouseOptions.value.length
+            ? 'Elegí el depósito donde entra el stock inicial'
+            : 'Creá un depósito antes de cargar stock inicial',
+        });
+        return;
+      }
       await createProduct({ ...form, warehouse_id: stockQty > 0 ? (form.warehouse_id ?? '') : '' });
     }
     dialogOpen.value = false;

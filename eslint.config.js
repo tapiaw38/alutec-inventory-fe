@@ -15,7 +15,9 @@ export default defineConfigWithVueTs(
      *
      * ESLint requires "ignores" key to be the only one in this object
      */
-    // ignores: []
+    // Standalone assertion scripts run through `node --experimental-strip-types`,
+    // so they are outside the app's tsconfig project.
+    ignores: ['**/*.check.ts'],
   },
 
   pluginQuasar.configs.recommended(),

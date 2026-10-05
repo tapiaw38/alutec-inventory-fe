@@ -181,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import type { QTableColumn } from 'quasar';
 import { useStockMovement } from '@/composables/useStockMovement';
 import { useProduct } from '@/composables/useProduct';
@@ -204,18 +204,13 @@ const columns: QTableColumn[] = [
   { name: 'note', label: 'Nota', field: 'note', align: 'left' },
 ];
 
-const productOptions = ref<{ label: string; value: string }[]>([]);
-const warehouseOptions = ref<{ label: string; value: string }[]>([]);
-const categoryOptions = ref<{ label: string; value: string }[]>([]);
-watch(products, (list) => {
-  productOptions.value = list.map((p) => ({ label: `${p.sku} · ${p.name}`, value: p.id }));
-});
-watch(warehouses, (list) => {
-  warehouseOptions.value = list.map((w) => ({ label: w.name, value: w.id }));
-});
-watch(categories, (list) => {
-  categoryOptions.value = list.map((c) => ({ label: c.name, value: c.id }));
-});
+// Derived, not watched: the stores are shared, so these lists can already be
+// populated on mount and a non-immediate watch would never fire for them.
+const productOptions = computed(() =>
+  products.value.map((p) => ({ label: `${p.sku} · ${p.name}`, value: p.id })),
+);
+const warehouseOptions = computed(() => warehouses.value.map((w) => ({ label: w.name, value: w.id })));
+const categoryOptions = computed(() => categories.value.map((c) => ({ label: c.name, value: c.id })));
 
 const typeOptions: { label: string; value: StockMovementType }[] = [
   { label: 'Entrada', value: 'in' },
